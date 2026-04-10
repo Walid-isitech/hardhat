@@ -1,0 +1,40 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-0b70782d22866db42645c69de963d832ece35ad3",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "compilerType": "solc",
+  "userSourceNameMap": {
+    "contracts/VotingSimple.sol": "project/contracts/VotingSimple.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/VotingSimple.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\ncontract VotingSimple {\r\n\r\n        struct Candidate {\r\n        string name;\r\n        uint voteCount;\r\n    }\r\n\r\n    Candidate[] public candidates;\r\n    mapping(address => bool) public authorizedVoters;\r\n    mapping(address => bool) public hasVoted;\r\n    address public owner;\r\n    bool public votingOpen;\r\n\r\n    modifier onlyOwner() {\r\n    require(msg.sender == owner, \"Pas l'admin\");\r\n    _;\r\n    }\r\n\r\n    modifier onlyVoter() {\r\n    require(authorizedVoters[msg.sender] == true, \"Pas autorise a voter\");\r\n    _;\r\n    }\r\n\r\n    modifier votingIsOpen() {\r\n    require(votingOpen == true, \"Le vote est ferme\");\r\n    _;\r\n    }\r\n\r\n    event VoterAdded(address indexed voter);\r\n\r\n    event VotingOpened();\r\n\r\n    event Voted(address indexed voter, uint candidateIndex);\r\n\r\n    constructor(string[] memory candidateNames) {\r\n        owner = msg.sender;\r\n        for (uint i = 0; i < candidateNames.length; i++) {\r\n            candidates.push(Candidate({\r\n                name: candidateNames[i],\r\n                voteCount: 0\r\n            }));\r\n        }\r\n    }\r\n\r\n    function addVoter(address voter) public onlyOwner {\r\n    require(authorizedVoters[voter] == false, \"Deja enregistre\");\r\n    authorizedVoters[voter] = true;\r\n    emit  VoterAdded(voter);\r\n    }\r\n\r\n    function startVoting() public onlyOwner {\r\n    require(votingOpen == false, \"Le vote est deja ouvert\");\r\n    votingOpen = true;\r\n    emit VotingOpened();\r\n    }\r\n\r\n    function vote(uint candidateIndex) public onlyVoter votingIsOpen {\r\n    require(hasVoted[msg.sender] == false, \"Vous avez deja vote\");\r\n    hasVoted[msg.sender] = true;\r\n    candidates[candidateIndex].voteCount++;\r\n    emit Voted(msg.sender, candidateIndex);\r\n    }\r\n\r\n    function getCandidateCount() public view returns (uint) {\r\n    return candidates.length;\r\n    }\r\n\r\n    function getWinner() public view returns (string memory) {\r\n        uint winnerIndex = 0;\r\n        for (uint i = 1; i < candidates.length; i++) {\r\n            if (candidates[i].voteCount > candidates[winnerIndex].voteCount) {\r\n                winnerIndex = i;\r\n            }\r\n        }\r\n        return candidates[winnerIndex].name;\r\n    }\r\n\r\n\r\n\r\n}\r\n"
+      }
+    }
+  }
+}
